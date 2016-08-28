@@ -4,9 +4,10 @@ import (
 	"io/ioutil"
 	"log"
 	"strconv"
+	"strings"
 )
 
-var targetFigures [9]Figure
+var targetFigures [10]Figure
 
 func init() {
 	digitBytes, err := ioutil.ReadFile("fixtures/digits")
@@ -14,10 +15,10 @@ func init() {
 		log.Fatal("Failed to read digits file")
 	}
 
-	digits := string(digitBytes)
+	lines := PrepLinesFromBuffer(string(digitBytes), 0)
 
 	for i := range targetFigures {
-		targetFigures[i] = ReadFigure(digits, uint(i))
+		targetFigures[i] = ReadFigure(lines, uint(i))
 	}
 }
 
@@ -29,24 +30,21 @@ func main() {
 // Figure is a typealias for a [3]string representing a figure read from the input.
 type Figure [3]string
 
-// input for OCR is a string of len (27 + 1 (newline)) * 3
-const lineRuneLength = 27 + 1
-
 // 9 figures expected per line
 const lineFigures = 9
 
 // ReadFigure reads the figure of the input at the zero-indexed offset from the start.
-func ReadFigure(s string, offset uint) Figure {
+func ReadFigure(lines []string, offset uint) Figure {
 	start := offset * 3
 	end := start + 3
-	ss1 := s[start:end]
-	ss2 := s[start+lineRuneLength : end+lineRuneLength]
-	ss3 := s[start+(lineRuneLength*2) : end+(lineRuneLength*2)]
+	ss0 := lines[0][start:end]
+	ss1 := lines[1][start:end]
+	ss2 := lines[2][start:end]
 
 	return Figure{
+		ss0,
 		ss1,
 		ss2,
-		ss3,
 	}
 }
 
@@ -67,11 +65,12 @@ func FigureToNumeral(f *Figure) (res byte, ok bool) {
 // LineToNumerals reads a line (string where length is (27 + 1) * 3 )
 // and returns a string of length 9 representing the best effort at
 // reading the line into numerals
-func LineToNumerals(line *string) string {
+func LineToNumerals(rawLine string) string {
 	bytes := make([]byte, lineFigures)
+	lines := PrepLinesFromBuffer(rawLine, 0)
 
 	for i := range bytes {
-		figure := ReadFigure(*line, uint(i))
+		figure := ReadFigure(lines, uint(i))
 		numeral, ok := FigureToNumeral(&figure)
 
 		b := numeral
@@ -83,4 +82,9 @@ func LineToNumerals(line *string) string {
 	}
 
 	return string(bytes)
+}
+
+func PrepLinesFromBuffer(buffer string, offset uint) []string {
+	lines := strings.Split(buffer, "\n")
+	return lines[offset : offset+3]
 }

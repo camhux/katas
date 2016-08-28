@@ -14,7 +14,7 @@ func TestReadFigure(t *testing.T) {
 		t.Fatal("Failed to read sequence file")
 	}
 
-	input := string(digitBytes)
+	input := PrepLinesFromBuffer(string(digitBytes), 0)
 
 	expected1 := Figure{
 		"   ",
@@ -22,7 +22,7 @@ func TestReadFigure(t *testing.T) {
 		"  |",
 	}
 
-	actual1 := ReadFigure(input, 1)
+	actual1 := ReadFigure(input, 0)
 
 	require.Equal(t, expected1, actual1)
 
@@ -32,7 +32,7 @@ func TestReadFigure(t *testing.T) {
 		"|_ ",
 	}
 
-	actual2 := ReadFigure(input, 2)
+	actual2 := ReadFigure(input, 1)
 
 	require.Equal(t, expected2, actual2)
 
@@ -104,7 +104,7 @@ func TestLineToNumerals(t *testing.T) {
 
 	expected := "490067715"
 
-	actual := LineToNumerals(&input)
+	actual := LineToNumerals(input)
 
 	require.Equal(t, expected, actual)
 }
